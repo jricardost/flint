@@ -36,5 +36,5 @@ O programa será capaz de receber arquivos em formatos determinados. Irá transc
     * *Descrição:* Implementar a validação do formato de saída solicitado contra a lista de formatos suportados.
 * **História (RF05):** Apresentar mensagens de erro claras se algo der errado (arquivo não encontrado, formato inválido, erro de conversão).
     * *Descrição:* Implementar um sistema robusto de *error handling* e feedback para o usuário.
-* **História (RF01):** Converter meus arquivos facilmente entre diferentes formatos (como .json, .csv, .xml, .md) usando uma única ferramenta de linha de comando.
+* **História (RF01):** Converter arquivos facilmente entre diferentes formatos (como .json, .csv, .xml, .md) usando uma única ferramenta de linha de comando.
     * *Descrição:* Implementar a funcionalidade central do Flint, permitindo que o usuário especifique um arquivo de entrada em um formato suportado e um formato de saída desejado. A ferramenta deve então realizar a conversão, processando a entrada, utilizando um formato interno para a transformação, e gerando o arquivo no formato de saída. Isso abrange a necessidade de ler e escrever JSON, CSV, XML, MD, TXT.

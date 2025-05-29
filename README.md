@@ -1,3 +1,6 @@
+<div align="center">
+  <img src="https://raw.githubusercontent.com/rodrigoacs/flint/refs/heads/main/assets/logo/flint-logo.png" alt="drawing" width="200"/>
+</div>
 # Flint - File Linter
 
 ## 1. O que o sistema vai fazer?

@@ -1,0 +1,11 @@
+
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" fill="white"/>
+  <g transform="translate(50,30) scale(1.2)">
+    <polygon points="40,0 80,40 60,100 0,80 10,20" 
+             fill="#3A3F44" stroke="#1F2327" stroke-width="4"/>
+  </g>
+  <text x="50%" y="170" font-family="Arial, sans-serif" font-size="32" fill="#3A3F44" text-anchor="middle">
+    Flint
+  </text>
+</svg>

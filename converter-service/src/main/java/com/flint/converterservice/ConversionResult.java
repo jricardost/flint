@@ -1,4 +1,4 @@
-package src.main.java.br.com.flint.receiver;
+package src.main.java.com.flint.converterservice;
 
 public class ConversionResult {
     private final byte[] data;

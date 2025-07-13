@@ -1,4 +1,4 @@
-package src.main.java.br.com.flint.receiver;
+package src.main.java.com.flint.converterservice;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.web.multipart.MultipartFile;

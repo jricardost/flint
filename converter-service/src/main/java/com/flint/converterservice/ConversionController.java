@@ -1,4 +1,4 @@
-package src.main.java.com.flint.converterservice;
+package com.flint.converterservice;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
@@ -18,6 +18,11 @@ public class ConversionController {
 
     public ConversionController(ConversionService conversionService) {
         this.conversionService = conversionService;
+    }
+
+    @GetMapping("/ping")
+    public String ping() {
+        return "converter-service OK!";
     }
 
     @PostMapping("/convert")

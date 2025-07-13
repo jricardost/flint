@@ -1,4 +1,4 @@
-package src.main.java.com.flint.converterservice;
+package com.flint.converterservice;
 
 import org.springframework.stereotype.Service;
 

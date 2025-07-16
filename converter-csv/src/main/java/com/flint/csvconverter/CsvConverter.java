@@ -1,5 +1,6 @@
-package src.main.java.br.com.flint.receiver;
+package com.flint.csvconverter;
 
+import com.flint.core.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -7,7 +8,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvException;
-import org.springframework.stereotype.Component;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
@@ -16,10 +21,21 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-@Component
+@RestController
 public class CsvConverter implements Converter {
 
+    private final CsvConverterService csvConverterService;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    public CsvConverter(CsvConverterService csvConverterService) {
+        this.csvConverterService = csvConverterService;
+    }
+
+    @GetMapping("/alive")
+    public Boolean alive() {
+        return true;
+    }
 
     @Override
     public String getFormatName() {
@@ -32,7 +48,9 @@ public class CsvConverter implements Converter {
     }
 
     @Override
+    @PostMapping("/std")
     public JsonNode toStandard(MultipartFile file) throws IOException, CsvException {
+        System.out.println("Converting CSV to standard format...");
         ArrayNode arrayNode = objectMapper.createArrayNode();
         try (Reader reader = new InputStreamReader(file.getInputStream());
                 CSVReader csvReader = new CSVReader(reader)) {
@@ -52,46 +70,46 @@ public class CsvConverter implements Converter {
                 arrayNode.add(objectNode);
             }
         }
-        return arrayNode;
+
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode rootNode = mapper.createObjectNode();
+        rootNode.set("data", arrayNode);
+
+        System.out.println("rootNode: " + rootNode.toString());
+
+        return rootNode;
     }
 
     @Override
-    public ConversionResult fromStandard(JsonNode standardData) throws IOException {
-        ArrayNode arrayNode = null;
+    @PostMapping("/out")
+    public ConversionResult fromStandard(@RequestBody JsonNode standardData) throws IOException {
+        // standardData = {"data":[{"a":"1","b":"2","c":"3"}]}
+        System.out.println("Converting standard format to CSV...");
+        List<String[]> csvData = new ArrayList<>();
+        Iterator<Map.Entry<String, JsonNode>> fields = standardData.get("data").fields();
+        List<String> headers = new ArrayList<>();
 
-        if (standardData.isArray()) {
-            arrayNode = (ArrayNode) standardData;
+        // Extract headers
+        while (fields.hasNext()) {
+            Map.Entry<String, JsonNode> entry = fields.next();
+            headers.add(entry.getKey());
         }
-        else if (standardData.isObject()) {
-            Iterator<Map.Entry<String, JsonNode>> fields = standardData.fields();
-            while (fields.hasNext()) {
-                Map.Entry<String, JsonNode> field = fields.next();
-                if (field.getValue().isArray()) {
-                    arrayNode = (ArrayNode) field.getValue();
-                    break;
-                }
+        csvData.add(headers.toArray(new String[0]));
+
+        // Extract rows
+        for (JsonNode row : standardData.get("data")) {
+            String[] csvRow = new String[headers.size()];
+            for (int i = 0; i < headers.size(); i++) {
+                csvRow[i] = row.get(headers.get(i)).asText();
             }
+            csvData.add(csvRow);
         }
 
-        StringWriter stringWriter = new StringWriter();
-        try (CSVWriter writer = new CSVWriter(stringWriter)) {
-            if (arrayNode == null || arrayNode.isEmpty()) {
-                return new ConversionResult("".getBytes(), "text/csv");
-            }
-
-            JsonNode firstNode = arrayNode.get(0);
-            List<String> headers = new ArrayList<>();
-            firstNode.fieldNames().forEachRemaining(headers::add);
-            writer.writeNext(headers.toArray(new String[0]));
-
-            for (JsonNode node : arrayNode) {
-                List<String> values = new ArrayList<>();
-                for (String header : headers) {
-                    values.add(node.get(header).asText());
-                }
-                writer.writeNext(values.toArray(new String[0]));
-            }
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        try (CSVWriter writer = new CSVWriter(new OutputStreamWriter(outputStream))) {
+            writer.writeAll(csvData);
         }
-        return new ConversionResult(stringWriter.toString().getBytes(), "text/csv");
+
+        return new ConversionResult(outputStream.toByteArray(), "text/csv");
     }
 }

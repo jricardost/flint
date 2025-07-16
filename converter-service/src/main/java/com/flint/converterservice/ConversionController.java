@@ -7,7 +7,16 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.MediaType;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
 import com.flint.core.*;
 
 @RestController
@@ -15,15 +24,18 @@ import com.flint.core.*;
 public class ConversionController {
 
     private final ConversionService conversionService;
+    private final RestTemplate restTemplate;
     private static final Logger logger = LoggerFactory.getLogger(ConversionController.class);
 
-    public ConversionController(ConversionService conversionService) {
+    public ConversionController(ConversionService conversionService, RestTemplate restTemplate) {
         this.conversionService = conversionService;
+        this.restTemplate = restTemplate;
     }
 
     @GetMapping("/ping")
     public String ping() {
-        return "converter-service OK!";
+        String response = restTemplate.getForObject("http://converter-csv/ping", String.class);
+        return "converter-service OK! - " + response;
     }
 
     @PostMapping("/convert")
@@ -31,35 +43,81 @@ public class ConversionController {
             @RequestParam("file") MultipartFile file,
             @RequestParam("to") String toFormat) {
 
-        String contentType = file.getContentType();
-        logger.info("Nova requisição de conversão: de [{}] para [{}]", contentType, toFormat);
+        var fileExt = file.getOriginalFilename().split("\\.")[1].toLowerCase();
+        logger.info("form [{}] to [{}]", fileExt, toFormat);
 
-        var fromConverterOpt = conversionService.getConverterByContentType(contentType);
-        if (fromConverterOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body("Formato de arquivo de origem nao suportado: " + contentType);
+        if (restTemplate.getForObject("http://converter-" + fileExt + "/alive", Boolean.class)) {
+            System.out.println(fileExt + " service is alive");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Converter for format '" + fileExt + "' not found.");
         }
 
-        var toConverterOpt = conversionService.getConverterByFormatName(toFormat);
-        if (toConverterOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body("Formato de destino nao suportado: " + toFormat);
+        if (restTemplate.getForObject("http://converter-" + toFormat + "/alive", Boolean.class)) {
+            System.out.println(toFormat + " service is alive");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Converter for format '" + toFormat + "' not found.");
         }
+
+        JsonNode standardData;
 
         try {
-            JsonNode standardData = fromConverterOpt.get().toStandard(file);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
-            logger.info("Formato Padrao Intermediario gerado: {}", standardData.toPrettyString());
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            ByteArrayResource fileAsResource = new ByteArrayResource(file.getBytes()) {
+                @Override
+                public String getFilename() {
+                    return file.getOriginalFilename();
+                }
+            };
 
-            ConversionResult result = toConverterOpt.get().fromStandard(standardData);
+            body.add("file", fileAsResource);
+
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+
+            String conversionUrl = "http://converter-" + fileExt + "/std";
+            standardData = restTemplate.postForObject(conversionUrl, requestEntity, JsonNode.class);
+
+            if (standardData == null) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Failed to convert file to standard format.");
+            }
+
+            System.out.println("Converted to standard format: " + standardData.toString());
+
+            // return ResponseEntity.ok()
+            // .contentType(MediaType.APPLICATION_JSON)
+            // .body(standardData);
+
+            String conversionResultUrl = "http://converter-" + toFormat + "/out";
+            ConversionResult conversionResult = restTemplate.postForObject(conversionResultUrl, standardData,
+                    ConversionResult.class);
+
+            if (conversionResult == null) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Failed to convert standard data to format '" + toFormat + "'.");
+            }
+
+            String qlqrCoisa = new String(conversionResult.getData(),"UTF-8");
+            System.out.println("qlqrCoisa: " + qlqrCoisa);
+
+            System.out.println("Converted to " + toFormat + " format: " +
+                    conversionResult.getData().toString());
+
+            HttpHeaders responseHeaders = new HttpHeaders();
+            responseHeaders.setContentType(MediaType.parseMediaType(conversionResult.getContentType()));
+            responseHeaders.setContentDispositionFormData("attachment", "converted." + toFormat);
 
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_TYPE, result.getContentType())
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"converted." + toFormat + "\"")
-                    .body(result.getData());
+                    .headers(responseHeaders)
+                    .body(new ByteArrayResource(conversionResult.getData().toString().getBytes()));
 
-        } catch (Exception e) {
-            logger.error("Erro durante a conversao", e); // Logamos o erro completo também
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Ocorreu um erro durante a conversao: " + e.getMessage());
+        } catch (IOException e) {
+            logger.error("Error reading file content", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error processing the uploaded file.");
         }
     }
 }

@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: converter-csv
+
+  config:
+    import: optional:configserver:http://localhost:8888

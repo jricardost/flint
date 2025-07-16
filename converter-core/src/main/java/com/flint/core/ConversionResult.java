@@ -1,4 +1,4 @@
-package com.flint.converterservice;
+package com.flint.core;
 
 public class ConversionResult {
     private final byte[] data;

@@ -1,18 +1,34 @@
-package src.main.java.br.com.flint.receiver;
+package com.flint.xmlconverter;
 
+import java.util.List;
+import com.flint.core.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import java.util.List;
 
-@Component
+@RestController
 public class XmlConverter implements Converter {
+
+  private final XmlConverterService xmlConverterService;
 
   private final XmlMapper xmlMapper = new XmlMapper();
   private final ObjectMapper jsonMapper = new ObjectMapper();
+
+  public XmlConverter(XmlConverterService xmlConverterService) {
+    this.xmlConverterService = xmlConverterService;
+  }
+
+  @GetMapping("/alive")
+  public Boolean alive() {
+    return true;
+  }
 
   @Override
   public String getFormatName() {
@@ -25,12 +41,27 @@ public class XmlConverter implements Converter {
   }
 
   @Override
+  @PostMapping("/std")
   public JsonNode toStandard(MultipartFile file) throws Exception {
-    return xmlMapper.readTree(file.getInputStream());
+    JsonNode incomingData = xmlMapper.readTree(file.getInputStream());
+
+    ObjectMapper jsonMapper = new ObjectMapper();
+    ObjectNode responseNode = jsonMapper.createObjectNode();
+
+    if (incomingData.isArray()) {
+      responseNode.set("data", incomingData);
+    } else {
+      ArrayNode dataArray = jsonMapper.createArrayNode();
+      dataArray.add(incomingData);
+      responseNode.set("data", dataArray);
+    }
+
+    return responseNode;
   }
 
   @Override
-  public ConversionResult fromStandard(JsonNode standardData) throws Exception {
+  @PostMapping("/out")
+  public ConversionResult fromStandard(@RequestBody JsonNode standardData) throws Exception {
     byte[] xmlData;
 
     if (standardData.isArray()) {

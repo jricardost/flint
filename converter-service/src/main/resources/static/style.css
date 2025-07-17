@@ -1,0 +1,371 @@
+html,
+body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: sans-serif;
+  background-color: #f0f2f5; /* Um fundo suave para dar contraste */
+}
+
+main {
+  max-width: 450px;
+  width: 100%;
+  padding: 0 20px;
+  text-align: center;
+}
+
+form {
+  padding: 30px;
+  border: 2px solid #e1e6f9;
+  border-radius: 12px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+  /* Novo: Usando Flexbox para layout interno */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 25px; /* Espaçamento consistente entre os elementos */
+}
+
+img {
+  width: 250px;
+  height: auto;
+  margin-bottom: 20px;
+}
+
+#result {
+  margin-top: 20px;
+  padding: 10px;
+  border-radius: 5px;
+  max-height: 100px;
+  overflow: hidden;
+  word-wrap: break-word;
+}
+
+.success {
+  border: 1px solid #28a745;
+  color: #28a745;
+  background-color: #e9f7ec;
+}
+
+.error {
+  border: 1px solid #dc3545;
+  color: #dc3545;
+  background-color: #fbebed;
+}
+
+/* Botão de Upload de Arquivo */
+.continue-application {
+  --color: #fff;
+  --background: #747e84;
+  --background-left: #333f49;
+  --folder: #f3e9cb;
+  --folder-inner: #beb393;
+  --paper: #ffffff;
+  --paper-lines: #bbc1e1;
+  --paper-behind: #e1e6f9;
+  --pencil-cap: #fff;
+  --pencil-top: var(--main-color);
+  --pencil-middle: #fff;
+  --pencil-bottom: #5c86ff;
+  --shadow: rgba(13, 15, 25, 0.2);
+  border: none;
+  outline: none;
+  cursor: pointer;
+  position: relative;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 19px;
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  padding: 17px 29px 17px 69px;
+  transition: background 0.3s;
+  color: var(--color);
+  background: var(--bg, var(--background));
+}
+
+.continue-application > div {
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 53px;
+  position: absolute;
+  overflow: hidden;
+  border-radius: 5px 0 0 5px;
+  background: var(--background-left);
+}
+
+.continue-application > div .folder {
+  width: 23px;
+  height: 27px;
+  position: absolute;
+  left: 15px;
+  top: 13px;
+}
+
+.continue-application > div .folder .top {
+  left: 0;
+  top: 0;
+  z-index: 2;
+  position: absolute;
+  transform: translateX(var(--fx, 0));
+  transition: transform 0.4s ease var(--fd, 0.3s);
+}
+
+.continue-application > div .folder .top svg {
+  width: 24px;
+  height: 27px;
+  display: block;
+  fill: var(--folder);
+  transform-origin: 0 50%;
+  transition: transform 0.3s ease var(--fds, 0.45s);
+  transform: perspective(120px) rotateY(var(--fr, 0deg));
+}
+
+.continue-application > div .folder:before,
+.continue-application > div .folder:after,
+.continue-application > div .folder .paper {
+  content: '';
+  position: absolute;
+  left: var(--l, 0);
+  top: var(--t, 0);
+  width: var(--w, 100%);
+  height: var(--h, 100%);
+  border-radius: 1px;
+  background: var(--b, var(--folder-inner));
+}
+
+.continue-application > div .folder:before {
+  box-shadow: 0 1.5px 3px var(--shadow), 0 2.5px 5px var(--shadow),
+    0 3.5px 7px var(--shadow);
+  transform: translateX(var(--fx, 0));
+  transition: transform 0.4s ease var(--fd, 0.3s);
+}
+
+.continue-application > div .folder:after,
+.continue-application > div .folder .paper {
+  --l: 1px;
+  --t: 1px;
+  --w: 21px;
+  --h: 25px;
+  --b: var(--paper-behind);
+}
+
+.continue-application > div .folder:after {
+  transform: translate(var(--pbx, 0), var(--pby, 0));
+  transition: transform 0.4s ease var(--pbd, 0s);
+}
+
+.continue-application > div .folder .paper {
+  z-index: 1;
+  --b: var(--paper);
+}
+
+.continue-application > div .folder .paper:before,
+.continue-application > div .folder .paper:after {
+  content: '';
+  width: var(--wp, 14px);
+  height: 2px;
+  border-radius: 1px;
+  transform: scaleY(0.5);
+  left: 3px;
+  top: var(--tp, 3px);
+  position: absolute;
+  background: var(--paper-lines);
+  box-shadow: 0 12px 0 0 var(--paper-lines), 0 24px 0 0 var(--paper-lines);
+}
+
+.continue-application > div .folder .paper:after {
+  --tp: 6px;
+  --wp: 10px;
+}
+
+.continue-application > div .pencil {
+  height: 2px;
+  width: 3px;
+  border-radius: 1px 1px 0 0;
+  top: 8px;
+  left: 105%;
+  position: absolute;
+  z-index: 3;
+  transform-origin: 50% 19px;
+  background: var(--pencil-cap);
+  transform: translateX(var(--pex, 0)) rotate(35deg);
+  transition: transform 0.4s ease var(--pbd, 0s);
+}
+
+.continue-application > div .pencil:before,
+.continue-application > div .pencil:after {
+  content: '';
+  position: absolute;
+  display: block;
+  background: var(
+    --b,
+    linear-gradient(
+      var(--pencil-top) 55%,
+      var(--pencil-middle) 55.1%,
+      var(--pencil-middle) 60%,
+      var(--pencil-bottom) 60.1%
+    )
+  );
+  width: var(--w, 5px);
+  height: var(--h, 20px);
+  border-radius: var(--br, 2px 2px 0 0);
+  top: var(--t, 2px);
+  left: var(--l, -1px);
+}
+
+.continue-application > div .pencil:before {
+  -webkit-clip-path: polygon(0 5%, 5px 5%, 5px 17px, 50% 20px, 0 17px);
+  clip-path: polygon(0 5%, 5px 5%, 5px 17px, 50% 20px, 0 17px);
+}
+
+.continue-application > div .pencil:after {
+  --b: none;
+  --w: 3px;
+  --h: 6px;
+  --br: 0 2px 1px 0;
+  --t: 3px;
+  --l: 3px;
+  border-top: 1px solid var(--pencil-top);
+  border-right: 1px solid var(--pencil-top);
+}
+
+.continue-application:before,
+.continue-application:after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--color);
+  transform-origin: 9px 1px;
+  transform: translateX(var(--cx, 0)) scale(0.5) rotate(var(--r, -45deg));
+  top: 26px;
+  right: 16px;
+  transition: transform 0.3s;
+}
+
+.continue-application:after {
+  --r: 45deg;
+}
+
+.continue-application:hover {
+  --cx: 2px;
+  --bg: var(--background-hover);
+  --fx: -40px;
+  --fr: -60deg;
+  --fd: 0.15s;
+  --fds: 0s;
+  --pbx: 3px;
+  --pby: -3px;
+  --pbd: 0.15s;
+  --pex: -24px;
+}
+
+/* CSS para esconder o input[type=file] original */
+#upload-form input[type='file'] {
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
+}
+
+/* Seletor de formato (JSON/CSV/XML) - Cores Harmonizadas */
+.wrapper {
+  /* Usando as cores do tema principal */
+  --font-color-dark: #fff; /* Texto sobre fundo ativo */
+  --font-color-light: #404660; /* Texto sobre fundo inativo */
+  --bg-color: #e1e6f9; /* Fundo geral do seletor */
+  --main-color: #747e84; /* Fundo do item ativo */
+
+  position: relative;
+  width: 280px;
+  height: 40px;
+  background-color: var(--bg-color);
+  border: none;
+  border-radius: 34px;
+  display: flex;
+  flex-direction: row;
+  box-shadow: inset 0 2px 4px rgba(13, 15, 25, 0.1);
+}
+
+.option {
+  flex: 1; /* Ocupa espaço igual */
+  height: 36px;
+  position: relative;
+  top: 2px;
+  left: 2px;
+  margin: 0 2px;
+}
+
+.input {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  appearance: none;
+  cursor: pointer;
+}
+
+.btn {
+  width: 100%;
+  height: 100%;
+  background-color: transparent; /* Fundo inativo transparente */
+  border-radius: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.span {
+  color: var(--font-color-light);
+  font-weight: 500;
+  transition: color 0.2s ease-in-out;
+}
+
+.input:checked + .btn {
+  background-color: var(--main-color);
+  box-shadow: 0 2px 5px rgba(13, 15, 25, 0.2);
+}
+
+.input:checked + .btn .span {
+  color: var(--font-color-dark);
+}
+
+/* Novo: Estilo para o botão de submit "Converter" */
+.submit-button {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  background-color: #747e84; /* Cor de destaque do tema */
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 280px; /* Mesma largura do seletor de formato */
+}
+
+.submit-button:hover {
+  background-color: #333f49;
+}
+
+.submit-button:active {
+  transform: scale(0.98);
+}

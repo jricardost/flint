@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Conversor de Arquivos</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="shortcut icon" href="logo.ico" type="image/x-icon" />
+  </head>
+  <body>
+    <main>
+      <img src="./logo.png" />
+
+      <form id="upload-form">
+        <input type="file" id="file" name="file" required />
+
+        <label for="file" class="continue-application">
+          <div>
+            <div class="pencil"></div>
+            <div class="folder">
+              <div class="top">
+                <svg viewBox="0 0 24 27">
+                  <path
+                    d="M1,0 L23,0 C23.5522847,-1.01453063e-16 24,0.44771525 24,1 L24,8.17157288 C24,8.70200585 23.7892863,9.21071368 23.4142136,9.58578644 L20.5857864,12.4142136 C20.2107137,12.7892863 20,13.2979941 20,13.8284271 L20,26 C20,26.5522847 19.5522847,27 19,27 L1,27 C0.44771525,27 6.76353751e-17,26.5522847 0,26 L0,1 C-6.76353751e-17,0.44771525 0.44771525,1.01453063e-16 1,0 Z"
+                  ></path>
+                </svg>
+              </div>
+              <div class="paper"></div>
+            </div>
+          </div>
+          Selecionar Arquivo
+        </label>
+
+        <div class="wrapper">
+          <div class="option">
+            <input class="input" type="radio" name="to" value="json" checked="" />
+            <div class="btn">
+              <span class="span">JSON</span>
+            </div>
+          </div>
+          <div class="option">
+            <input class="input" type="radio" name="to" value="csv" />
+            <div class="btn">
+              <span class="span">CSV</span>
+            </div>
+          </div>
+          <div class="option">
+            <input class="input" type="radio" name="to" value="xml" />
+            <div class="btn">
+              <span class="span">XML</span>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="submit-button">Converter</button>
+      </form>
+
+      <div id="result"></div>
+    </main>
+    <script>
+      const form = document.getElementById('upload-form')
+      const resultDiv = document.getElementById('result')
+
+      form.addEventListener('submit', async event => {
+        event.preventDefault()
+        resultDiv.textContent = 'Enviando e convertendo...'
+        resultDiv.className = ''
+        const formData = new FormData(form)
+        // Workaround para o 'name' do radio button
+        const selectedFormat = form.querySelector('input[name="to"]:checked').value
+        formData.append('to', selectedFormat)
+        try {
+          const response = await fetch('/api/convert', {
+            method: 'POST',
+            body: formData,
+          })
+          if (response.ok) {
+            const disposition = response.headers.get('content-disposition')
+            const filenameMatch = disposition ? disposition.match(/filename="(.+)"/) : null
+            const filename = filenameMatch ? filenameMatch[1] : 'converted-file'
+            const blob = await response.blob()
+            const downloadUrl = window.URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.style.display = 'none'
+            a.href = downloadUrl
+            a.download = filename
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(downloadUrl)
+            a.remove()
+            resultDiv.textContent = `Download do arquivo '${filename}' iniciado com sucesso!`
+            resultDiv.className = 'success'
+          } else {
+            const errorText = await response.text()
+            resultDiv.textContent = `Erro ${response.status}: ${errorText}`
+            resultDiv.className = 'error'
+          }
+        } catch (error) {
+          console.error('Erro na requisição:', error)
+          resultDiv.textContent = 'Erro de rede. Verifique o console para mais detalhes.'
+          resultDiv.className = 'error'
+        }
+      })
+    </script>
+  </body>
+</html>

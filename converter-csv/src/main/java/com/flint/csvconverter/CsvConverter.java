@@ -83,33 +83,36 @@ public class CsvConverter implements Converter {
     @Override
     @PostMapping("/out")
     public ConversionResult fromStandard(@RequestBody JsonNode standardData) throws IOException {
-        // standardData = {"data":[{"a":"1","b":"2","c":"3"}]}
-        System.out.println("Converting standard format to CSV...");
-        List<String[]> csvData = new ArrayList<>();
-        Iterator<Map.Entry<String, JsonNode>> fields = standardData.get("data").fields();
-        List<String> headers = new ArrayList<>();
+    System.out.println("Converting standard format to CSV...");
 
-        // Extract headers
-        while (fields.hasNext()) {
-            Map.Entry<String, JsonNode> entry = fields.next();
-            headers.add(entry.getKey());
-        }
-        csvData.add(headers.toArray(new String[0]));
+    JsonNode dataArray = standardData.get("data");
 
-        // Extract rows
-        for (JsonNode row : standardData.get("data")) {
-            String[] csvRow = new String[headers.size()];
-            for (int i = 0; i < headers.size(); i++) {
-                csvRow[i] = row.get(headers.get(i)).asText();
-            }
-            csvData.add(csvRow);
-        }
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        try (CSVWriter writer = new CSVWriter(new OutputStreamWriter(outputStream))) {
-            writer.writeAll(csvData);
-        }
-
-        return new ConversionResult(outputStream.toByteArray(), "text/csv");
+    if (dataArray == null || !dataArray.isArray() || dataArray.isEmpty()) {
+        System.out.println("No data found or data is not an array.");
+        return new ConversionResult("".getBytes(), "text/csv");
     }
+
+    List<String> headers = new ArrayList<>();
+    dataArray.get(0).fieldNames().forEachRemaining(headers::add);
+    System.out.println("Extracted Headers: " + headers);
+
+    StringWriter stringWriter = new StringWriter();
+    try (CSVWriter writer = new CSVWriter(stringWriter)) {
+        writer.writeNext(headers.toArray(new String[0]));
+
+        for (JsonNode rowNode : dataArray) {
+            List<String> values = new ArrayList<>();
+            for (String header : headers) {
+                JsonNode valueNode = rowNode.get(header);
+                values.add(valueNode != null ? valueNode.asText() : "");
+            }
+            writer.writeNext(values.toArray(new String[0]));
+        }
+    }
+
+    byte[] csvBytes = stringWriter.toString().getBytes("UTF-8");
+    System.out.println("Generated CSV:\n" + new String(csvBytes));
+
+    return new ConversionResult(csvBytes, "text/csv");
+}
 }

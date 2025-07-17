@@ -27,9 +27,8 @@
               <div class="paper"></div>
             </div>
           </div>
-          Selecionar Arquivo
+          <span id="button-text">Selecionar Arquivo</span>
         </label>
-
         <div class="wrapper">
           <div class="option">
             <input class="input" type="radio" name="to" value="json" checked="" />
@@ -59,6 +58,17 @@
     <script>
       const form = document.getElementById('upload-form')
       const resultDiv = document.getElementById('result')
+
+      const fileInput = document.getElementById('file')
+      const buttonTextSpan = document.getElementById('button-text')
+
+      fileInput.addEventListener('change', () => {
+        if (fileInput.files.length > 0) {
+          buttonTextSpan.textContent = fileInput.files[0].name
+        } else {
+          buttonTextSpan.textContent = 'Selecionar Arquivo'
+        }
+      })
 
       form.addEventListener('submit', async event => {
         event.preventDefault()

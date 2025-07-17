@@ -369,3 +369,15 @@ img {
 .submit-button:active {
   transform: scale(0.98);
 }
+
+#button-text {
+  /* Garante que o texto se comporte bem dentro do botão */
+  display: inline-block;
+  vertical-align: middle; /* Alinha o texto verticalmente com o ícone */
+  
+  /* Corta nomes de arquivo longos com "..." */
+  max-width: 150px; /* Ajuste este valor conforme necessário */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

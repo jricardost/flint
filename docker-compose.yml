@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  config-server:
+    build:
+      context: .
+      dockerfile: config-server/Dockerfile
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    networks:
+      - flint-net
+
+  discovery-server:
+    build:
+      context: .
+      dockerfile: discovery-server/Dockerfile
+    container_name: discovery-server
+    ports:
+      - "8761:8761"
+    networks:
+      - flint-net
+
+  converter-service:
+    build:
+      context: .
+      dockerfile: converter-service/Dockerfile
+    container_name: converter-service
+    ports:
+      - "8081:8081"
+    networks:
+      - flint-net
+    depends_on:
+      - config-server
+      - discovery-server
+
+  converter-csv:
+    build:
+      context: .
+      dockerfile: converter-csv/Dockerfile
+    container_name: converter-csv
+    ports:
+      - "8083:8083"
+    networks:
+      - flint-net
+    depends_on:
+      - config-server
+      - discovery-server
+
+  converter-json:
+    build:
+      context: .
+      dockerfile: converter-json/Dockerfile
+    container_name: converter-json
+    ports:
+      - "8082:8082"
+    networks:
+      - flint-net
+    depends_on:
+      - config-server
+      - discovery-server
+
+  converter-xml:
+    build:
+      context: .
+      dockerfile: converter-xml/Dockerfile
+    container_name: converter-xml
+    ports:
+      - "8084:8084"
+    networks:
+      - flint-net
+    depends_on:
+      - config-server
+      - discovery-server
+
+networks:
+  flint-net:
+    driver: bridge

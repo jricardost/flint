@@ -1,6 +1,7 @@
-FROM eclipse-temurin:17-jdk
-RUN apt-get update && apt-get install -y maven && apt-get clean
+FROM openjdk:17-jdk-slim
+RUN apt-get update && apt-get install -y maven
 WORKDIR /app
-COPY . .
+COPY config-server .
+COPY config-files /app/config-files
 EXPOSE 8888
-CMD ["mvn", "spring-boot:run"]
+CMD ["mvn", "-f", "pom.xml", "spring-boot:run", "-q"]

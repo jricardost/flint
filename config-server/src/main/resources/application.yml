@@ -8,5 +8,5 @@ spring:
     config:
       server:
         git:
-          uri: file:///${user.dir}/../config-files
+          uri: file:///app/config-files
           default-label: main

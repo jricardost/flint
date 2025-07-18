@@ -1,24 +1,4 @@
 services:
-  config-server:
-    build:
-      context: .
-      dockerfile: config-server/Dockerfile
-    container_name: config-server
-    ports:
-      - "8888:8888"
-    networks:
-      - flint-net
-
-  discovery-server:
-    build:
-      context: .
-      dockerfile: discovery-server/Dockerfile
-    container_name: discovery-server
-    ports:
-      - "8761:8761"
-    networks:
-      - flint-net
-
   converter-service:
     build:
       context: .

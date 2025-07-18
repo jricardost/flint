@@ -8,9 +8,6 @@ services:
       - "8081:8081"
     networks:
       - flint-net
-    depends_on:
-      - config-server
-      - discovery-server
 
   converter-csv:
     build:
@@ -21,9 +18,6 @@ services:
       - "8083:8083"
     networks:
       - flint-net
-    depends_on:
-      - config-server
-      - discovery-server
 
   converter-json:
     build:
@@ -34,9 +28,6 @@ services:
       - "8082:8082"
     networks:
       - flint-net
-    depends_on:
-      - config-server
-      - discovery-server
 
   converter-xml:
     build:
@@ -47,9 +38,6 @@ services:
       - "8084:8084"
     networks:
       - flint-net
-    depends_on:
-      - config-server
-      - discovery-server
 
 networks:
   flint-net:

@@ -1,0 +1,30 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy and build
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          script: |
+            cd flint
+            echo ${{secrets.SUDO}} | sudo -S docker compose down 
+            git pull
+            cd /config-files
+            git pull
+            cd ../
+            mvn -f converter-core/pom.xml clean package
+            echo ${{secrets.SUDO}} | sudo -S docker compose -f docker-compose-servers.yml up -d --build
+            sleep 60
+            echo ${{secrets.SUDO}} | sudo -S docker compose -f docker-compose-converters.yml up -d --build
+            

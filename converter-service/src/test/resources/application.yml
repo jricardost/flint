@@ -1,0 +1,7 @@
+spring:
+  config:
+    import: "" # Deixar em branco sobrescreve e desativa o import do config-server
+
+eureka:
+  client:
+    enabled: false # Desabilita o cliente Eureka para os testes
